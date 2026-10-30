@@ -1,47 +1,79 @@
-public class ArrayQueue<T> implements QueueInterface<T>
+@SuppressWarnings("unchecked")
+public class ArrayQueue<T> implements QueueInterface<T> 
 {
+    private T[] log = (T[]) new Object[4];
     private int size;
-    private T[] log;
-    private int front;
-    public ArrayQueue()
-    {
-        log = (T[]) new Object[4];
-        size = 0;
-        front = 0;
-    }
-    public int size()
+    private int head;
+    private int tail;
+
+    public int size() 
     {
         return size;
     }
-    public boolean empty()
+
+    public boolean empty() 
     {
         return size == 0;
     }
-    public T add(T item)
+
+    public T add(T item) 
     {
-        if(size == log.length)
+        if (size == log.length) 
         {
-            T[] newLog = (T[])new Object[log.length *2];
-            for(int i = front ; i<log.length; i++)
+            T[] newLog = (T[]) new Object[log.length * 2];
+            for (int i = 0; i < size; i++) 
             {
-                newLog[i] = log[i];
+                newLog[i] = log[(head + i) % log.length];
             }
-            for(int i = 0; i<front; i++)
-            {
-                newLog[i] = log[i];
-            }
-            newLog[size] = item;
             log = newLog;
-            size++;
-            front = 0;
-            return item;
+            head = 0;
+            tail = size;
         }
-        else
-        {
-            log[size] = item;
-            size++;
-            return item;
-        }
+        log[tail] = item;
+        tail = (tail + 1) % log.length;
+        size++;
+        return item;
     }
 
+    public T peek() throws QueueUnderflowException {
+        if (empty()) 
+        {
+            throw new QueueUnderflowException();
+        }
+        return log[head];
+    }
+
+    public T remove() throws QueueUnderflowException {
+        if (empty()) 
+        {
+            throw new QueueUnderflowException();
+        }
+
+        T item = log[head];
+        log[head] = null;
+        head = (head + 1) % log.length;
+        size--;
+
+        if (log.length > 4 && size <= log.length / 4) 
+        {
+            T[] newLog = (T[]) new Object[log.length / 2];
+            for (int i = 0; i < size; i++) 
+            {
+                newLog[i] = log[(head + i) % log.length];
+            }
+            log = newLog;
+            head = 0;
+            tail = size;
+        }
+        return item;
+    }
+
+    public void clear() {
+        log = (T[]) new Object[4];
+        size = 0;
+        head = 0;
+        tail = 0;
+    }
+
+    
 }
